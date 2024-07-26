@@ -23,7 +23,72 @@
     <div id="scene5" class="chart"></div>
 
     <script>
-        // D3 visualization code will go here
-    </script>
+        d3.csv("internet-usage-data.csv").then(function(data) {
+            
+            data.forEach(d => {
+                d.year = +d.year;
+                d.internetUsers = +d.internetUsers;
+            });
+        
+            function scene1() {
+                var svg = d3.select("#scene1")
+                    .append("svg")
+                    .attr("width", 800)
+                    .attr("height", 400);
+        
+                var x = d3.scaleLinear()
+                    .domain([1990, 2020])
+                    .range([50, 750]);
+        
+                var y = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => d.internetUsers)])
+                    .range([350, 50]);
+        
+                var line = d3.line()
+                    .x(d => x(d.year))
+                    .y(d => y(d.internetUsers));
+        
+                svg.append("path")
+                    .datum(data)
+                    .attr("fill", "none")
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-width", 1.5)
+                    .attr("d", line);
+        
+                svg.selectAll(".dot")
+                    .data(data)
+                    .enter().append("circle")
+                    .attr("class", "dot")
+                    .attr("cx", d => x(d.year))
+                    .attr("cy", d => y(d.internetUsers))
+                    .attr("r", 5)
+                    .on("mouseover", function(event, d) {
+                        d3.select(this).attr("r", 8);
+                        d3.select("#tooltip")
+                            .style("left", (event.pageX + 10) + "px")
+                            .style("top", (event.pageY - 10) + "px")
+                            .style("display", "inline-block")
+                            .html(`Year: ${d.year}<br>Users: ${d.internetUsers}M`);
+                    })
+                    .on("mouseout", function() {
+                        d3.select(this).attr("r", 5);
+                        d3.select("#tooltip").style("display", "none");
+                    });
+        
+                svg.append("text")
+                    .attr("x", 400)
+                    .attr("y", 30)
+                    .attr("text-anchor", "middle")
+                    .attr("class", "annotation")
+                    .text("Global Internet Users Over Time");
+
+                d3.select("body").append("div")
+                    .attr("id", "tooltip")
+                    .attr("style", "position: absolute; text-align: center; width: 120px; height: 50px; padding: 2px; font: 12px sans-serif; background: lightsteelblue; border: 0px; border-radius: 8px; pointer-events: none; display: none;");
+            }
+        
+            scene1();
+        });
+    </script>        
 </body>
 </html>
